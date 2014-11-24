@@ -22,8 +22,8 @@ sub run_7zip {
 	my $cmd = "$sevenzip $command @$switches $archive_name @$files";
 	say STDERR $cmd;
 
-	open my $output, '|-' , $cmd;
-
+	open my $output, '-|' , $cmd;
+	return $output;
 }
 
 
