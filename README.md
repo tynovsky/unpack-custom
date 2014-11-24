@@ -8,7 +8,8 @@ Unpack::Recursive - It's new $module
 
 # DESCRIPTION
 
-Unpack::Recursive is ...
+Unpack::Recursive takes any kind of archive and unpacks it. If it contains an
+archive, it is unpacked (recursively) too.
 
 # LICENSE
 

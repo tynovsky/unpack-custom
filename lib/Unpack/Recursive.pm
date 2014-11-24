@@ -1,10 +1,30 @@
 package Unpack::Recursive;
-use 5.008001;
+use v5.16;
 use strict;
 use warnings;
 
 our $VERSION = "0.01";
 
+my $sevenzip = '7za';
+
+sub new {
+	my ($class, $args) = @_;
+	$args //= {};
+	
+	return bless $args, $class;
+}
+
+sub run_7zip {
+	my ($self, $command, $switches, $archive_name, $files) = @_;
+	$_ //= [] for $switches, $files;
+	$_ //= '' for $command, $archive_name;
+
+	my $cmd = "$sevenzip $command @$switches $archive_name @$files";
+	say STDERR $cmd;
+
+	open my $output, '|-' , $cmd;
+
+}
 
 
 1;
@@ -22,7 +42,8 @@ Unpack::Recursive - It's new $module
 
 =head1 DESCRIPTION
 
-Unpack::Recursive is ...
+Unpack::Recursive takes any kind of archive and unpacks it. If it contains an
+archive, it is unpacked (recursively) too.
 
 =head1 LICENSE
 
