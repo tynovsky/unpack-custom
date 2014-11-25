@@ -1,14 +1,15 @@
 use strict;
 use Test::More 0.98;
 use Unpack::Recursive;
-use IO::Select;
+use Data::Dumper;
 
 my $unpacker = Unpack::Recursive->new();
 
-my $out =  $unpacker->szip_list('t/archive.7z');
-like($out, qr/Listing archive/, 'list contains string "Listing archive"'); 
+my $files =  $unpacker->szip_list('t/archive.7z');
 
-# note $out;
+is(@$files, 24, 'there are 24 files in the archive');
+
+note Dumper $files;
 
 
 done_testing;

@@ -33,9 +33,28 @@ sub run_7zip {
 
 sub szip_list {
 	my ($self, $filename) = @_;
-	my ($pid, $fh) = $self->run_7zip('l', $filename);
-	my $out = do { local $/; <$fh> };
-	return $out;
+	my ($pid, $out) = $self->run_7zip('l', $filename, ['-slt']);
+
+	my $seen_header = 0;
+	my @files;
+	my $file;
+	while (my $line = <$out>) {
+		if (not $seen_header) {
+			$seen_header = $line =~ /^----------$/;
+			next
+		}
+		
+		if ($line =~ /^$/) {
+			push @files, $file;
+			$file = {};
+		}
+		my ($key, $value) = $line =~ /(.*?) = (.*)/;
+		if (grep $_ eq lc($key), qw(path size)) {
+			$file->{lc $key} = $value;
+		}
+	}
+	
+	return \@files;
 }
 
 
