@@ -7,7 +7,7 @@ use Symbol 'gensym';
 use Data::Dumper;
 use File::Basename;
 use File::Path qw(make_path);
-use autodie;
+use Digest::SHA qw(sha256_hex);
 
 use IO::Pty;
 
@@ -60,7 +60,7 @@ sub list {
 
 #TODO: split!
 sub extract {
-    my ($self, $filename) = @_;
+    my ($self, $filename, $destination) = @_;
     use bytes;
 
     my $list = $self->list($filename);
@@ -77,10 +77,14 @@ sub extract {
             if (defined fileno($out) && fileno($fh) == fileno($out)) {
                 my $read_anything = 0;
                 my $data;
-                while (my $read_bytes = $fh->sysread($data, 4096)) {
+                while (my $read_bytes = $fh->read($data, 4096)) {
                     $contents .= $data;
                     if (length($contents) >= $file->{size}) {
-                        $self->save(substr($contents, 0, $file->{size}), $file);
+                        $self->save(
+                            substr($contents, 0, $file->{size}),
+                            $file,
+                            $destination,
+                        );
                         $contents = substr($contents, $file->{size});
                         $file = shift @$list;
                     }
@@ -110,18 +114,34 @@ sub extract {
     return ($success, $err_log);
 }
 
-sub save {
-    my ($self, $contents, $file) = @_;
+sub save_normal {
+    my ($self, $contents, $file, $destination) = @_;
     use bytes;
 
-    make_path(dirname($file->{path});
-    open my $fh, '>', $file->{path};
+    make_path($destination . '/' . dirname($file->{path}));
+    open my $fh, '>', $destination . '/' . $file->{path};
     print {$fh} $contents;
     close $fh;
 
     no bytes;
 }
 
+sub save {
+    my ($self, $contents, $file, $destination) = @_;
+    use bytes;
+
+    make_path($destination);
+    my $sha = sha256_hex($contents);
+    open my $fh, '>', "$destination/$sha.dat";
+    print {$fh} $contents;
+    close $fh;
+
+    open $fh, '>>', "$destination/names.txt";
+    print {$fh} "$sha\t$file->{path}\n";
+    close $fh;
+
+    no bytes;
+}
 
 1;
 __END__
