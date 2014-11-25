@@ -4,6 +4,10 @@ use strict;
 use warnings;
 use IPC::Open3;
 use Symbol 'gensym';
+use Data::Dumper;
+use File::Basename;
+use File::Path qw(make_path);
+use autodie;
 
 use IO::Pty;
 
@@ -70,10 +74,10 @@ sub extract {
     my $contents;
     while ( my @ready = $reader->can_read() ) {
         foreach my $fh (@ready) {
-            if (fileno($fh) == fileno($out)) {
+            if (defined fileno($out) && fileno($fh) == fileno($out)) {
                 my $read_anything = 0;
                 my $data;
-                while (my $read_bytes = $fh->sysread(\$data, 4096)) {
+                while (my $read_bytes = $fh->sysread($data, 4096)) {
                     $contents .= $data;
                     if (length($contents) >= $file->{size}) {
                         $self->save(substr($contents, 0, $file->{size}), $file);
@@ -88,7 +92,7 @@ sub extract {
                     next
                 }
             }
-            elsif (fileno($fh) == fileno($err)) {
+            elsif (defined fileno($err) && fileno($fh) == fileno($err)) {
                 my $line = <$fh>;
                 if (!defined $line) {
                     $reader->remove($fh);
@@ -109,8 +113,12 @@ sub extract {
 sub save {
     my ($self, $contents, $file) = @_;
     use bytes;
-    print STDERR Dumper $file;
-    print STDERR "wanna save " . length($contents) . "bytes\n";
+
+    make_path(dirname($file->{path});
+    open my $fh, '>', $file->{path};
+    print {$fh} $contents;
+    close $fh;
+
     no bytes;
 }
 
