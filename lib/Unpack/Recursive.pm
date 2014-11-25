@@ -2,10 +2,15 @@ package Unpack::Recursive;
 use v5.16;
 use strict;
 use warnings;
+use IPC::Open3;
+use Symbol 'gensym';
 
+use IO::Pty;
+
+ 
 our $VERSION = "0.01";
 
-my $sevenzip = '7za';
+my $sevenzip = '7z';
 
 sub new {
 	my ($class, $args) = @_;
@@ -15,15 +20,22 @@ sub new {
 }
 
 sub run_7zip {
-	my ($self, $command, $switches, $archive_name, $files) = @_;
+	my ($self, $command, $archive_name, $switches, $files, $stdin) = @_;
 	$_ //= [] for $switches, $files;
 	$_ //= '' for $command, $archive_name;
 
+	my ($out, $err) = (IO::Handle->new, IO::Handle->new);
 	my $cmd = "$sevenzip $command @$switches $archive_name @$files";
-	say STDERR $cmd;
+	my $pid = open3 $stdin, $out, $err, $cmd;
 
-	open my $output, '-|' , $cmd;
-	return $output;
+	return ($pid, $out, $err)
+}
+
+sub szip_list {
+	my ($self, $filename) = @_;
+	my ($pid, $fh) = $self->run_7zip('l', $filename);
+	my $out = do { local $/; <$fh> };
+	return $out;
 }
 
 
