@@ -17,8 +17,10 @@ my @files = qw(t/recursive.7z);
 while (my $f = shift @files) {
     note "Processing file: $f\n";
     try {
-        my $extracted = $unpacker->extract($f, 'dest');
-        unlink $f;
+        my $extracted = $unpacker->extract_sha($f, 'dest');
+        if (@$extracted) {
+            unlink $f; #the file was archive, now it is extracted
+        }
         note Dumper $extracted;
         push @files, @$extracted;
     }
@@ -28,6 +30,7 @@ while (my $f = shift @files) {
 }
 
 my @files = glob('dest/*.dat');
+note `ls dest`;
 is(@files, 3, 'Three files extracted');
 
 remove_tree('dest');

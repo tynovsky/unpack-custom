@@ -6,7 +6,7 @@ use File::Path qw(remove_tree);
 
 my $unpacker = Unpack::Recursive->new();
 
-$unpacker->extract('t/archive.7z', 'dest');
+$unpacker->extract_sha('t/archive.7z', 'dest');
 
 #note `find dest`;
 my @files = glob('dest/*.dat');
@@ -15,7 +15,7 @@ is(@files, 24, 'All files extracted');
 open my $fh, '<', 'dest/names.txt';
 my @names = <$fh>;
 close $fh;
-is(@names, 24, 'All names are there');
+is(@names, 25, 'All names are there');
 
 remove_tree('dest');
 

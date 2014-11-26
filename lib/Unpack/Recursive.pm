@@ -58,16 +58,59 @@ sub list {
     return \@files;
 }
 
-sub extract {
+sub extract_sha {
     my ($self, $filename, $destination) = @_;
-    use bytes;
 
-    my $sha_obj = 'Digest::SHA'->new(256);
-    $sha_obj->addfile($filename);
-    my $sha = $sha_obj->hexdigest();
+    #initialize
+    my $parent_sha = $self->file_sha($filename);
+    make_path($destination);
+    open my $names_fh, '>>', "$destination/names.txt";
+    print {$names_fh} "$parent_sha\t\t$filename\n";
+
+    # define function for saving extracted files
+    my $save = sub {
+        my ($contents, $file) = @_;
+
+        my $sha = sha256_hex($contents);
+        my $filename = "$destination/$sha.dat";
+        open my $fh, '>:bytes', $filename;
+        print {$fh} $contents;
+        close $fh;
+
+        print {$names_fh} "$sha\t$parent_sha\t$file->{path}\n";
+        close $fh;
+
+        return $filename
+    };
+
+    # define function for recognizing archives
+    my $want_extract = sub {
+        my ($file) = @_;
+        my $list = $self->list($file);
+        return @$list > 0;
+    };
+
+    #run general extract method
+    my $extracted_files = $self->extract($filename, $want_extract, $save);
+
+    #finalize
+    close $names_fh;
+
+    return $extracted_files;
+}
+
+sub extract {
+    my ($self, $filename, $want_extract, $save) = @_;
+
+    return [] if ! $want_extract->($filename);
 
     my $list = $self->list($filename);
-    my ($pid, $out, $err) = $self->run_7zip('x', $filename, ['-so'] );
+    my ($pid, $out, $err) = $self->run_7zip('x', $filename, ['-so']);
+    return $self->process_7zip_out( $out, $err, $list, $save);
+}
+
+sub process_7zip_out {
+    my ($self, $out, $err, $list, $save_fn) = @_;
 
     my $success = 0;
     my $szip_out;
@@ -84,11 +127,9 @@ sub extract {
                 while (my $read_bytes = $fh->read($data, 4096)) {
                     $contents .= $data;
                     if (length($contents) >= $file->{size}) {
-                        push @extracted_files, $self->save(
+                        push @extracted_files, $save_fn->(
                             substr($contents, 0, $file->{size}),
                             $file,
-                            $destination,
-                            $sha,
                         );
                         $contents = substr($contents, $file->{size});
                         $file = shift @$list;
@@ -114,48 +155,24 @@ sub extract {
         }
     }
     if ($contents) {
-        push @extracted_files, $self->save(
-            $contents, $file, $destination, $sha
-        );
+        push @extracted_files, $save_fn->($contents, $file);
     }
-    no bytes;
-    waitpid(0, $pid);
 
-    if (! $success) {
-        print STDERR "7zip output:\n" . $szip_out;
-        die "Failed to extract archive '$filename'";
+    if (! $success ) {
+        print STDERR $szip_out;
+        die "7zip failed to extract.\n";
     }
 
     return \@extracted_files;
 }
 
-sub save_normal {
-    my ($self, $contents, $file, $destination) = @_;
 
-    my $filename = $destination . '/' . $file->{path};
-    make_path(dirname($filename));
-    open my $fh, '>', $filename;
-    print {$fh} $contents;
-    close $fh;
+sub file_sha {
+    my ($self, $filename) = @_;
 
-    return $filename
-}
-
-sub save {
-    my ($self, $contents, $file, $destination, $parent) = @_;
-
-    make_path($destination);
-    my $sha = sha256_hex($contents);
-    my $filename = "$destination/$sha.dat";
-    open my $fh, '>', $filename;
-    print {$fh} $contents;
-    close $fh;
-
-    open $fh, '>>', "$destination/names.txt";
-    print {$fh} "$sha\t$parent\t$file->{path}\n";
-    close $fh;
-
-    return $filename
+    state $sha_obj = 'Digest::SHA'->new(256);
+    $sha_obj->addfile($filename);
+    return $sha_obj->hexdigest();
 }
 
 1;
