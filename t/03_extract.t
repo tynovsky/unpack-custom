@@ -9,9 +9,14 @@ my $unpacker = Unpack::Recursive->new();
 $unpacker->extract('t/archive.7z', 'dest');
 
 #note `find dest`;
-my $file_count = int( `find dest -type f -name "*.dat" | wc --lines` );
-is($file_count, 24, 'All files extracted');
+my @files = glob('dest/*.dat');
+is(@files, 24, 'All files extracted');
+
+open my $fh, '<', 'dest/names.txt';
+my @names = <$fh>;
+close $fh;
+is(@names, 24, 'All names are there');
+
 remove_tree('dest');
 
 done_testing;
-

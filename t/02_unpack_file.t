@@ -18,7 +18,8 @@ while ( my @ready = $reader->can_read() ) {
             my $i = 0;
             my $data;
             while ($fh->read(\$data, 4096)) {
-                #print STDERR $i++, " ";
+                $i++;
+                #print STDERR $i, " ";
             }
             if (!$i) {
                 # note "close fh";
@@ -43,7 +44,7 @@ while ( my @ready = $reader->can_read() ) {
 
 waitpid(0, $pid);
 
-ok($everything_ok, '7za says: "Everything is Ok"');
+ok($everything_ok, '7zip says: "Everything is Ok"');
 
 
 done_testing;
