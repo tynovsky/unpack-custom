@@ -13,7 +13,7 @@ use IO::Handle;
 
 our $VERSION = "0.01";
 
-my $sevenzip = '7z';
+my $sevenzip = '/home/tynovsky/p7zip_9.20.1/bin/7z';
 
 sub new {
     my ($class, $args) = @_;
@@ -28,34 +28,45 @@ sub run_7zip {
     $_ //= '' for $command, $archive_name;
 
     my ($out, $err) = (IO::Handle->new, IO::Handle->new);
-    my $cmd = "$sevenzip $command @$switches $archive_name @$files";
+    my $cmd = "$sevenzip $command @$switches '$archive_name' @$files";
+    #print STDERR "$cmd\n";
     my $pid = open3 $stdin, $out, $err, $cmd;
 
     return ($pid, $out, $err)
 }
 
-sub list {
+sub info {
     my ($self, $filename) = @_;
     my ($pid, $out) = $self->run_7zip('l', $filename, ['-slt']);
 
-    my ($seen_header, @files, $file);
+    my ($file_list_started, $info_started, @files, $file, $info);
     while (my $line = <$out>) {
-        if (not $seen_header) { # there is some irrelevant info before -----
-            $seen_header = $line =~ /^----------$/;
-            next
+        $file_list_started ||= $line =~ /^----------$/;
+        $info_started      ||= $line =~ /^--$/;
+        next if $line =~ /^-+$/;
+
+        if ($file_list_started) {
+            if ($line =~ /^$/) { # empty lines separate the files
+                push @files, $file;
+                $file = {};
+                next
+            }
+            my ($key, $value) = $line =~ /(.*?) = (.*)/;
+            if (grep $_ eq lc($key), qw(path size)) {
+                $file->{lc $key} = $value;
+            }
         }
-        if ($line =~ /^$/) { # empty lines separate the files
-            push @files, $file;
-            $file = {};
-            next
+        elsif ($info_started) {
+            if( my ($key, $value) = $line =~ /(.*?) = (.*)/ ) {
+                $info->{lc $key} = $value;
+            }
         }
-        my ($key, $value) = $line =~ /(.*?) = (.*)/;
-        if (grep $_ eq lc($key), qw(path size)) {
-            $file->{lc $key} = $value;
+        else {
+            next
         }
     }
 
-    return \@files;
+    return (\@files, $info);
 }
 
 sub extract_sha {
@@ -64,20 +75,39 @@ sub extract_sha {
     #initialize
     my $parent_sha = $self->file_sha($filename);
     make_path($destination);
-    open my $names_fh, '>>', "$destination/names.txt";
-    print {$names_fh} "$parent_sha\t\t$filename\n";
+    my @names = ({sha => $parent_sha, parent => '', name => $filename});
+    my ($list, $info) = $self->info($filename);
+    my @params;
+    if ($info->{multivolume} && $info->{multivolume} eq '+') {
+        my $last_file = pop @$list;
+        push @params, "-x!$last_file->{path}";
+        if ($info->{characteristics} !~ /FirstVolume/) {
+            my $first_file = shift @$list;
+            push @params, "-x!$first_file->{path}";
+        }
+    }
 
     # define function for saving extracted files
     my $save = sub {
         my ($contents, $file) = @_;
 
         my $sha = sha256_hex($contents);
+
+        if ( grep {$_->{sha} eq $sha} @names ) {
+            print STDERR "Skipping $file->{path}, seen before\n";
+            return
+        }
+
         my $filename = "$destination/$sha.dat";
         open my $fh, '>:bytes', $filename;
         print {$fh} $contents;
         close $fh;
 
-        print {$names_fh} "$sha\t$parent_sha\t$file->{path}\n";
+        push @names, {
+            sha => $sha,
+            parent => $parent_sha,
+            name => $file->{path},
+        };
         close $fh;
 
         return $filename
@@ -86,26 +116,33 @@ sub extract_sha {
     # define function for recognizing archives
     my $want_extract = sub {
         my ($file) = @_;
-        my $list = $self->list($file);
+        my ($list) = $self->info($file);
         return @$list > 0;
     };
 
     #run general extract method
-    my $extracted_files = $self->extract($filename, $want_extract, $save);
+    my $extracted_files = $self->extract(
+        $filename, $want_extract, $save, \@params, $list
+    );
 
     #finalize
+    open my $names_fh, '>>', "$destination/names.txt";
+    print {$names_fh} "$_->{sha}\t$_->{parent}\t$_->{name}\n" for @names;
     close $names_fh;
 
     return $extracted_files;
 }
 
 sub extract {
-    my ($self, $filename, $want_extract, $save) = @_;
+    my ($self, $filename, $want_extract, $save, $params, $list) = @_;
 
     return [] if ! $want_extract->($filename);
 
-    my $list = $self->list($filename);
-    my ($pid, $out, $err) = $self->run_7zip('x', $filename, ['-so']);
+    $list   //= ($self->info($filename))[0];
+    $params //= [];
+    push @$params, '-so';
+
+    my ($pid, $out, $err) = $self->run_7zip('x', $filename, $params);
     return $self->process_7zip_out( $out, $err, $list, $save);
 }
 
@@ -122,6 +159,7 @@ sub process_7zip_out {
     while ( my @ready = $reader->can_read() ) {
         foreach my $fh (@ready) {
             if (defined fileno($out) && fileno($fh) == fileno($out)) {
+                use bytes;
                 my $read_anything = 0;
                 my $data;
                 while (my $read_bytes = $fh->read($data, 4096)) {
@@ -171,7 +209,7 @@ sub file_sha {
     my ($self, $filename) = @_;
 
     state $sha_obj = 'Digest::SHA'->new(256);
-    $sha_obj->addfile($filename);
+    $sha_obj->addfile($filename, 'b');
     return $sha_obj->hexdigest();
 }
 
