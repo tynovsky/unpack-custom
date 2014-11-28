@@ -14,11 +14,15 @@ my $unpacker = Unpack::Recursive->new();
 
 my @files = qw(t/recursive.7z);
 
-$unpacker->extract_recursive_sha(1, @files);
+$unpacker->extract_recursive_sha([@files], 1, 'dest');
 
 my @result = glob('dest/*.dat');
 #note `ls dest`;
+#note `cat dest/names.txt`;
 is(@result, 3, 'Three files extracted');
+open my $fh, '<', 'dest/names.txt';
+is(scalar(() = <$fh>), 5, 'There are five records in names.txt');
+close $fh;
 
 remove_tree('dest');
 

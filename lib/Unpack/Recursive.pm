@@ -20,32 +20,38 @@ sub new {
 }
 
 sub extract_recursive_sha {
-    my ($self, $delete_archives, @files) = @_;
+    my ($self, $files, $delete_archives, $destination, $params) = @_;
 
-    while (my $f = shift @files) {
-        my $extracted = $self->extract_sha($f, 'dest');
+    make_path($destination);
+    open my $names_fh, '>>', "$destination/names.txt"
+        or die "Could not open $destination/names.txt: $!";
+    print {$names_fh} $self->file_sha($_), "\t\t$_\n" for @$files;
+    close $names_fh;
+
+    while (my $f = shift @$files) {
+        my $extracted = $self->extract_sha($f, $destination);
         if (@$extracted && $delete_archives) {
             unlink $f; #was archive, now it is extracted, delete it
         }
-        push @files, @$extracted;
+        push @$files, @$extracted;
     }
 }
 
 sub extract_sha {
-    my ($self, $filename, $destination) = @_;
+    my ($self, $filename, $destination, $params) = @_;
 
     #initialize
     my $parent_sha = $self->file_sha($filename);
     make_path($destination);
-    my @names = ({sha => $parent_sha, parent => '', name => $filename});
+    my @names;
     my ($list, $info) = $self->{szip}->info($filename);
-    my @params;
+    $params //= [];
     if ($info->{multivolume} && $info->{multivolume} eq '+') {
         my $last_file = pop @$list;
-        push @params, "-x!$last_file->{path}";
+        push @$params, "-x!$last_file->{path}";
         if ($info->{characteristics} !~ /FirstVolume/) {
             my $first_file = shift @$list;
-            push @params, "-x!$first_file->{path}";
+            push @$params, "-x!$first_file->{path}";
         }
     }
 
@@ -83,13 +89,23 @@ sub extract_sha {
     };
 
     #run general extract method
-    my $extracted_files = $self->{szip}->extract(
-        $filename, $want_extract, $save, \@params, $list
+    my ($extracted_files, $corrupted_paths) = $self->{szip}->extract(
+        $filename, $want_extract, $save, $params, $list
     );
 
-    #finalize
+    #finalize - remove corrupted files and store names
+    my @names_ok;
+    for my $file (@names) {
+        if (grep $file->{name} eq $_, @$corrupted_paths) {
+            print STDERR "deleting corrupted ", Dumper $file;
+            unlink "$destination/$file->{sha}.dat";
+        }
+        else {
+            push @names_ok, $file;
+        }
+    }
     open my $names_fh, '>>', "$destination/names.txt";
-    print {$names_fh} "$_->{sha}\t$_->{parent}\t$_->{name}\n" for @names;
+    print {$names_fh} "$_->{sha}\t$_->{parent}\t$_->{name}\n" for @names_ok;
     close $names_fh;
 
     return $extracted_files;

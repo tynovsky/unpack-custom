@@ -15,7 +15,7 @@ is(@files, 24, 'All files extracted');
 open my $fh, '<', 'dest/names.txt';
 my @names = <$fh>;
 close $fh;
-is(@names, 25, 'All names are there');
+is(@names, 24, 'All names are there');
 
 remove_tree('dest');
 
