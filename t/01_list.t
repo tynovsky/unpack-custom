@@ -3,7 +3,7 @@ use Test::More 0.98;
 use Unpack::Recursive;
 use Data::Dumper;
 
-my $unpacker = Unpack::Recursive->new();
+my $unpacker = Unpack::SevenZip->new();
 
 my ($files, $info) =  $unpacker->info('t/archive.7z');
 

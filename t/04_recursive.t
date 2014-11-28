@@ -14,20 +14,7 @@ my $unpacker = Unpack::Recursive->new();
 
 my @files = qw(t/recursive.7z);
 
-while (my $f = shift @files) {
-    #note "Processing file: $f\n";
-    try {
-        my $extracted = $unpacker->extract_sha($f, 'dest');
-        if (@$extracted) {
-            unlink $f; #the file was archive, now it is extracted
-        }
-        #note Dumper $extracted;
-        push @files, @$extracted;
-    }
-    catch {
-        note 'failed to unpack (not an archive?)';
-    }
-}
+$unpacker->extract_recursive_sha(1, @files);
 
 my @result = glob('dest/*.dat');
 #note `ls dest`;

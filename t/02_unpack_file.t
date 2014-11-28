@@ -3,7 +3,7 @@ use Test::More 0.98;
 use Unpack::Recursive;
 use IO::Select;
 
-my $unpacker = Unpack::Recursive->new();
+my $unpacker = Unpack::SevenZip->new();
 
 my ($pid, $out, $err) = $unpacker->run_7zip('x', 't/archive.7z', ['-so'] );
 ok($out, 'Got the output handle');
