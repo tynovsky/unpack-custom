@@ -8,7 +8,9 @@ use Data::Dumper;
 
 my $unpacker = Unpack::Recursive->new();
 
-my @files = qw(t/r.zip);
+`cp t/r.zip t/quine.zip`;
+
+my @files = qw(t/quine.zip);
 
 while (my $f = shift @files) {
     #note "Processing file: $f\n";
