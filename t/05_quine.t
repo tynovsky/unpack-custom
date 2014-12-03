@@ -12,28 +12,15 @@ my $unpacker = Unpack::Recursive->new();
 
 my @files = qw(t/quine.zip);
 
-while (my $f = shift @files) {
-    #note "Processing file: $f\n";
-    try {
-        my $extracted = $unpacker->extract_sha($f, 'dest');
-        if (@$extracted) {
-            unlink $f; #the file was archive, now it is extracted
-        }
-        #note Dumper $extracted;
-        push @files, @$extracted;
-    }
-    catch {
-        note 'failed to unpack (not an archive?)';
-    }
-}
+$unpacker->extract_recursive_sha([ @files ], 0, 'dest');
 
 ok(1);
 
 
 my @result = glob('dest/*.dat');
-#note `ls dest`;
-is(@result, 0, 'Nothing was extracted. It\'s a trap!');
-#note `cat dest/names.txt`;
+note `ls dest`;
+is(@result, 1, 'One file was extracted (avoided endless loop!).');
+note `cat dest/names.txt`;
 
 remove_tree('dest');
 done_testing;

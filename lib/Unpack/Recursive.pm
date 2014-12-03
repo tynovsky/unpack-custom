@@ -8,6 +8,7 @@ use Data::Dumper;
 use File::Path qw(make_path);
 use Digest::SHA qw(sha256_hex);
 use Unpack::SevenZip;
+use Clone qw(clone);
 
 our $VERSION = "0.01";
 
@@ -23,18 +24,45 @@ sub extract_recursive_sha {
     my ($self, $files, $delete_archives, $destination, $params) = @_;
 
     make_path($destination);
-    open my $names_fh, '>>', "$destination/names.txt"
-        or die "Could not open $destination/names.txt: $!";
-    print {$names_fh} $self->file_sha($_), "\t\t$_\n" for @$files;
-    close $names_fh;
+
+    my %name_of;
+    for my $file (@$files) {
+        my $sha = $self->file_sha($file);
+        $name_of{$sha} = { name => $file, parent => '', sha => $sha };
+    }
 
     while (my $f = shift @$files) {
         my $extracted = $self->extract_sha($f, $destination);
-        if (@$extracted && $delete_archives) {
+        if (keys %$extracted && $delete_archives) {
             unlink $f; #was archive, now it is extracted, delete it
         }
-        push @$files, @$extracted;
+        for my $sha (keys %$extracted) {
+            if (! $name_of{$sha} ) {
+                # say STDERR $sha;
+                push @$files, "$destination/$sha.dat";
+            }
+        }
+        %name_of = (%name_of, %$extracted);
     }
+    for my $value (values %name_of) {
+        my @parents = ($value->{sha});
+        $value->{parents} = \@parents;
+        my $item = clone($value);
+        while ($item = clone($name_of{ $item->{parent} })) {
+            last if grep $_ eq $item->{sha}, @parents;
+            push @parents, $item->{sha};
+        }
+    }
+
+    open my $fh, '>', "$destination/names.txt";
+    while (my ($key, $value) = each %name_of) {
+        my $fullname = join '/', map {
+                $name_of{$_}->{name}
+            } reverse @{$value->{parents}};
+        print {$fh} "$key\t$fullname\n";
+    }
+    close $fh;
+
 }
 
 sub extract_sha {
@@ -94,21 +122,20 @@ sub extract_sha {
     );
 
     #finalize - remove corrupted files and store names
-    my @names_ok;
+    my %name_of;
     for my $file (@names) {
         if (grep $file->{name} eq $_, @$corrupted_paths) {
             print STDERR "deleting corrupted ", Dumper $file;
             unlink "$destination/$file->{sha}.dat";
         }
         else {
-            push @names_ok, $file;
+            $name_of{$file->{sha}} = { name   => $file->{name},
+                                       parent => $file->{parent},
+                                       sha    => $file->{sha}    };
         }
     }
-    open my $names_fh, '>>', "$destination/names.txt";
-    print {$names_fh} "$_->{sha}\t$_->{parent}\t$_->{name}\n" for @names_ok;
-    close $names_fh;
 
-    return $extracted_files;
+    return \%name_of;
 }
 
 sub file_sha {
