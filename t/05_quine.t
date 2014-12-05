@@ -1,25 +1,20 @@
 use strict;
 use Test::More 0.98;
-use Unpack::Recursive;
+use Unpack::Custom::Recursive;
 use IO::Select;
 use File::Path qw(remove_tree);
 use Try::Tiny;
 use Data::Dumper;
 
-my $unpacker = Unpack::Recursive->new();
+my $unpacker = Unpack::Custom::Recursive->new();
 
-`cp t/r.zip t/quine.zip`;
+my @files = qw(t/r.zip);
 
-my @files = qw(t/quine.zip);
-
-$unpacker->extract_recursive_sha([ @files ], 0, 'dest');
-
-ok(1);
-
+$unpacker->extract([ @files ], 'dest');
 
 my @result = glob('dest/*.dat');
 note `ls dest`;
-is(@result, 1, 'One file was extracted (avoided endless loop!).');
+is(@result, 0, 'Nothing was extracted (it\'s a trap!).');
 note `cat dest/names.txt`;
 
 remove_tree('dest');

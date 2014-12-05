@@ -1,20 +1,25 @@
 use strict;
 use Test::More 0.98;
-use Unpack::Recursive;
+use Unpack::Custom::Recursive;
 use IO::Select;
 use File::Path qw(remove_tree);
 
-my $unpacker = Unpack::Recursive->new();
+`7z a -pHESLO t/password.7z Makefile LICENSE`;
 
-$unpacker->extract_sha('t/password.7z', 'dest');
+my $unpacker = Unpack::Custom::Recursive->new();
+$unpacker->extract(['t/password.7z'], 'dest');
 
 my @files = glob('dest/*.dat');
-is(@files, 0, 'Not extracted without password');
+is(@files, 1, 'Not extracted without password');
 
-$unpacker->extract_sha('t/password.7z', 'dest', ['-pHESLO']);
+$unpacker->extract(['t/password.7z'], 'dest', ['-pHESLO']);
+# note `ls dest`;
+# note `cat dest/names.txt`;
+# note `cat dest/*.dat`;
 @files = glob('dest/*.dat');
-is(@files, 1, 'Extracted with password');
+is(@files, 2, 'Extracted with password');
 
 remove_tree('dest');
+unlink 't/password.7z';
 
 done_testing;

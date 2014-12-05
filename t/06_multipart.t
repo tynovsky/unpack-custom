@@ -1,14 +1,14 @@
 use strict;
 use Test::More 0.98;
-use Unpack::Recursive;
+use Unpack::Custom::Recursive;
 use IO::Select;
 use File::Path qw(remove_tree);
 use Try::Tiny;
 use Data::Dumper;
 
-my $unpacker = Unpack::Recursive->new();
+my $unpacker = Unpack::Custom::Recursive->new({ no_recursive => 1 });
 
-my $extracted = $unpacker->extract_sha('t/2014-05-28.part1.rar', 'dest');
+my $extracted = $unpacker->extract(['t/2014-05-28.part1.rar'], 'dest');
 
 my @result = glob('dest/*.dat');
 #note `ls dest`;

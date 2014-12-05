@@ -1,13 +1,13 @@
 use strict;
 use Test::More 0.98;
-use Unpack::Recursive;
+use Unpack::Custom::Recursive;
 use File::Path qw(remove_tree);
 
-my $unpacker = Unpack::Recursive->new();
+my $unpacker = Unpack::Custom::Recursive->new();
 
 `cp LICENSE t/nonarchive.7z`;
 
-$unpacker->extract_recursive_sha(['t/nonarchive.7z'], 0, 'dest');
+$unpacker->extract(['t/nonarchive.7z'], 'dest');
 
 my @files = glob('dest/*.dat');
 is(@files, 1, 'No files extracted from non-archive');

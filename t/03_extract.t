@@ -1,16 +1,17 @@
 use strict;
 use Test::More 0.98;
-use Unpack::Recursive;
+use Unpack::Custom::Recursive;
 use IO::Select;
 use File::Path qw(remove_tree);
 
-my $unpacker = Unpack::Recursive->new();
+remove_tree('dest');
+my $unpacker = Unpack::Custom::Recursive->new();
 
-$unpacker->extract_recursive_sha([ 't/archive.7z' ], 0, 'dest');
+$unpacker->extract([ 't/archive.7z' ], 'dest');
 
 # note `find dest`;
 my @files = glob('dest/*.dat');
-is(@files, 62, 'All files extracted');
+is(@files, 50, 'All files extracted');
 
 open my $fh, '<', 'dest/names.txt';
 my @names = <$fh>;

@@ -1,13 +1,13 @@
 use strict;
 use Test::More 0.98;
 use Test::Exception;
-use Unpack::Recursive;
+use Unpack::Custom::Recursive;
 use File::Path qw(remove_tree);
 
-my $unpacker = Unpack::Recursive->new();
+my $unpacker = Unpack::Custom::Recursive->new();
 
 dies_ok {
-    $unpacker->extract_sha('t/nonexistent.7z', 'dest');
+    $unpacker->extract('t/nonexistent.7z', 'dest');
 } 'dies on non-existing file';
 
 my @files = glob('dest/*.dat');

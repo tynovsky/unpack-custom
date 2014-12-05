@@ -1,12 +1,12 @@
 use strict;
 use Test::More 0.98;
-use Unpack::Recursive;
+use Unpack::Custom::Recursive;
 use IO::Select;
 use File::Path qw(remove_tree);
 use Try::Tiny;
 use Data::Dumper;
 
-my $unpacker = Unpack::Recursive->new();
+my $unpacker = Unpack::Custom::Recursive->new();
 
 `7z a b.7z META.json README.md`;
 `7z a t/recursive.7z b.7z LICENSE`;
@@ -14,12 +14,12 @@ my $unpacker = Unpack::Recursive->new();
 
 my @files = qw(t/recursive.7z);
 
-$unpacker->extract_recursive_sha([@files], 1, 'dest');
+$unpacker->extract([@files], 'dest');
 
 my @result = glob('dest/*.dat');
 # note `ls dest`;
 # note `cat dest/names.txt`;
-is(@result, 4, 'Four files extracted');
+is(@result, 3, 'Three files extracted');
 
 open my $fh, '<', 'dest/names.txt';
 my @lines = <$fh>;
@@ -40,5 +40,6 @@ is(
 
 
 remove_tree('dest');
+unlink 't/recursive.7z';
 
 done_testing;
