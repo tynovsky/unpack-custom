@@ -8,7 +8,7 @@ my $unpacker = Unpack::Recursive->new();
 
 dies_ok {
     $unpacker->extract_sha('t/nonexistent.7z', 'dest');
-}, 'dies on non-existing file';
+} 'dies on non-existing file';
 
 my @files = glob('dest/*.dat');
 is(@files, 0, 'No files extracted from nonexistent file');

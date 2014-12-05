@@ -10,7 +10,7 @@ my $unpacker = Unpack::Recursive->new();
 $unpacker->extract_recursive_sha(['t/nonarchive.7z'], 0, 'dest');
 
 my @files = glob('dest/*.dat');
-is(@files, 0, 'No files extracted from non-archive');
+is(@files, 1, 'No files extracted from non-archive');
 
 remove_tree('dest');
 unlink 't/nonarchive.7z';

@@ -12,7 +12,7 @@ my $unpacker = Unpack::Recursive->new();
 $unpacker->extract_recursive_sha(['t/corrupted.7z'], 0, 'dest');
 
 my @files = glob('dest/*.dat');
-is(@files, 0, 'No files extracted from nonexistent file');
+is(@files, 1, 'No files extracted from corrupted file');
 
 remove_tree('dest');
 #unlink 't/corrupted.7z';

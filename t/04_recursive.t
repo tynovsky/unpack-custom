@@ -17,9 +17,9 @@ my @files = qw(t/recursive.7z);
 $unpacker->extract_recursive_sha([@files], 1, 'dest');
 
 my @result = glob('dest/*.dat');
-note `ls dest`;
-note `cat dest/names.txt`;
-is(@result, 3, 'Three files extracted');
+# note `ls dest`;
+# note `cat dest/names.txt`;
+is(@result, 4, 'Four files extracted');
 
 open my $fh, '<', 'dest/names.txt';
 my @lines = <$fh>;

@@ -9,6 +9,7 @@ use File::Path qw(make_path);
 use Digest::SHA qw(sha256_hex);
 use Unpack::SevenZip;
 use Clone qw(clone);
+use File::Copy;
 
 our $VERSION = "0.01";
 
@@ -21,18 +22,26 @@ sub new {
 }
 
 sub extract_recursive_sha {
-    my ($self, $files, $delete_archives, $destination, $params) = @_;
+    my ($self,
+        $files,
+        $delete_archives,
+        $destination,
+        $params,
+        $want_extract) = @_;
 
     make_path($destination);
 
     my %name_of;
     for my $file (@$files) {
         my $sha = $self->file_sha($file);
+        copy "$file", "$destination/$sha.dat" or die "copy failed: $!";
         $name_of{$sha} = { name => $file, parent => '', sha => $sha };
     }
 
     while (my $f = shift @$files) {
-        my $extracted = $self->extract_sha($f, $destination);
+        my $extracted = $self->extract_sha(
+            $f, $destination, undef, $want_extract
+        );
         if (keys %$extracted && $delete_archives) {
             unlink $f; #was archive, now it is extracted, delete it
         }
@@ -63,10 +72,11 @@ sub extract_recursive_sha {
     }
     close $fh;
 
+    return \%name_of;
 }
 
 sub extract_sha {
-    my ($self, $filename, $destination, $params) = @_;
+    my ($self, $filename, $destination, $params, $want_extract) = @_;
 
     #initialize
     my $parent_sha = $self->file_sha($filename);
@@ -110,7 +120,7 @@ sub extract_sha {
     };
 
     # define function for recognizing archives
-    my $want_extract = sub {
+    $want_extract //= sub {
         my ($file) = @_;
         my ($list) = $self->{szip}->info($file);
         return @$list > 0;
