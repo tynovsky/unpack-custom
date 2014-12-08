@@ -167,16 +167,17 @@ __END__
 
 =head1 NAME
 
-Unpack::Recursive - It's new $module
+Unpack::Custom::Recursive - It's new $module
 
 =head1 SYNOPSIS
 
-    use Unpack::Recursive;
+    use Unpack::Custom::Recursive;
 
 =head1 DESCRIPTION
 
-Unpack::Recursive takes any kind of archive and unpacks it. If it contains an
-archive, it is unpacked (recursively) too.
+Unpack::Custom::Recursive takes any kind of archive (restricted to what 7zip
+can extract) and unpacks it. If it contains an archive, it is unpacked
+(recursively) too.
 
 =head1 LICENSE
 

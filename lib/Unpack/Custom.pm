@@ -74,3 +74,37 @@ sub extract {
 }
 
 1
+__END__
+
+=encoding utf-8
+
+=head1 NAME
+
+Unpack::Custom - It's new $module
+
+=head1 SYNOPSIS
+
+    use Unpack::Custom;
+
+=head1 DESCRIPTION
+
+Unpack::Custom is a wrapper around Unpack::SevenZip which allows user to define
+callback functions implementing behavior during extracting an archive. You can
+specify what to do before unpacking starts, before and after unpacking a file,
+and after unpacking finishes. Moreover you can also specify how to recognize
+if a file is an archive we want to unpack. This general module is used in
+Unpack::Custom::Recursive which extracts archives recursively.
+
+=head1 LICENSE
+
+Copyright (C) Týnovský Miroslav.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=head1 AUTHOR
+
+Týnovský Miroslav E<lt>tynovsky@avast.comE<gt>
+
+=cut
+

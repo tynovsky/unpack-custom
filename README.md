@@ -1,15 +1,19 @@
 # NAME
 
-Unpack::Recursive - It's new $module
+Unpack::Custom - It's new $module
 
 # SYNOPSIS
 
-    use Unpack::Recursive;
+    use Unpack::Custom;
 
 # DESCRIPTION
 
-Unpack::Recursive takes any kind of archive and unpacks it. If it contains an
-archive, it is unpacked (recursively) too.
+Unpack::Custom is a wrapper around Unpack::SevenZip which allows user to define
+callback functions implementing behavior during extracting an archive. You can
+specify what to do before unpacking starts, before and after unpacking a file,
+and after unpacking finishes. Moreover you can also specify how to recognize
+if a file is an archive we want to unpack. This general module is used in
+Unpack::Custom::Recursive which extracts archives recursively.
 
 # LICENSE
 
