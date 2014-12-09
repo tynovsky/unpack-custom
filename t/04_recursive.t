@@ -5,8 +5,11 @@ use IO::Select;
 use File::Path qw(remove_tree);
 use Try::Tiny;
 use Data::Dumper;
+use Digest::SHA;
 
 my $unpacker = Unpack::Custom::Recursive->new();
+
+my $sha = 'Digest::SHA'->new(256)->addfile('README.md', 'b')->hexdigest();
 
 `7z a b.7z META.json README.md`;
 `7z a t/recursive.7z b.7z LICENSE`;
@@ -17,8 +20,8 @@ my @files = qw(t/recursive.7z);
 $unpacker->extract([@files], 'dest');
 
 my @result = glob('dest/*.dat');
-# note `ls dest`;
-# note `cat dest/names.txt`;
+note `ls dest`;
+note `cat dest/names.txt`;
 is(@result, 3, 'Three files extracted');
 
 open my $fh, '<', 'dest/names.txt';
@@ -32,11 +35,7 @@ for my $line (@lines) {
     %hash = (%hash, split /\t/, $line);
 }
 
-is(
-    $hash{'250028199e148a9d751c29901231071ebb3dfb8124089b5670f7c24eb93581b0'},
-    't/recursive.7z/b.7z/README.md',
-    'Recursive name is correct'
-);
+is($hash{$sha}, 't/recursive.7z/b.7z/README.md', 'Recursive name is correct');
 
 
 remove_tree('dest');
