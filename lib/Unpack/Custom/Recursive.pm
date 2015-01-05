@@ -13,7 +13,7 @@ use File::Copy;
 
 our $VERSION = "0.01";
 
-my %callbacks = (
+our %callbacks = (
     initialize => sub {
         my ($self) = @_;
 
