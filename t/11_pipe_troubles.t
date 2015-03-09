@@ -9,7 +9,7 @@ $unpacker->extract(['t/pipe_troubles.zip'], 'dest');
 
 ok(1, 'Extraction finished');
 
-#remove_tree('dest');
+remove_tree('dest');
 
 done_testing;
 

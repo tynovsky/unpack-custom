@@ -11,12 +11,12 @@ $unpacker->extract([ 't/archive.7z' ], 'dest');
 
 # note `find dest`;
 my @files = glob('dest/*.dat');
-is(@files, 50, 'All files extracted');
+is(@files, 51, 'All files extracted');
 
 open my $fh, '<', 'dest/names.txt';
 my @names = <$fh>;
 close $fh;
-is(@names, 62, 'All names are there');
+is(@names, 63, 'All names are there');
 
 remove_tree('dest');
 
