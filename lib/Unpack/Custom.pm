@@ -22,8 +22,6 @@ sub AUTOLOAD {
     }
 }
 
-use subs @SUBS;
-
 sub new {
     my $class = shift;
 

@@ -36,8 +36,8 @@ our %callbacks = (
         for my $value (values %$name_of) {
             my @parents = ($value->{sha});
             $value->{parents} = \@parents;
-            my $item = clone($value);
-            while ($item = clone($name_of->{ $item->{parent} })) {
+            my $item = $value;
+            while ($item = $name_of->{ $item->{parent} }) {
                 last if grep $_ eq $item->{sha}, @parents;
                 push @parents, $item->{sha};
             }
