@@ -22,14 +22,14 @@ my $archive = "t/$dir.tar.gz";
 `gunzip $dir/dependencies/i18n/src/main/resources/org/apache/abdera/i18n/unicode/data/ucd.res.gz`;
 my $hashes = `for f in \$(find $dir -type f); do sha256sum \$f; done`;
 #print $hashes;
-my @hashes = uniq sort map { s/ .*//r } (split /\n/, $hashes);
+my @hashes = uniq sort map { s/ .*//; $_ } (split /\n/, $hashes);
 `rm -rf $dir`;
 
 #print Dumper \@hashes;
 
 $unpacker->extract([$archive], 'dest');
 
-my @result = map { s/dest\/(.*)\.dat/$1/r } glob('dest/*.dat');
+my @result = map { s/dest\/(.*)\.dat/$1/; $_ } glob('dest/*.dat');
 
 is(scalar(@result), scalar(@hashes), 'same number of elements');
 is_deeply(\@result, \@hashes);
