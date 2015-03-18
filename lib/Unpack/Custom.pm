@@ -15,7 +15,7 @@ my @SUBS = qw(initialize finalize before_unpack after_unpack want_unpack save);
 
 sub AUTOLOAD {
     my $self = shift;
-    my $sub = $AUTOLOAD =~ s/.*:://r;
+    (my $sub = $AUTOLOAD) =~ s/.*:://;
     if (grep $_ eq $sub, @SUBS) {
         return $self->{$sub}->($self, @_);
     }
