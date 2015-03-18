@@ -54,9 +54,14 @@
    },
    "release_status" : "unstable",
    "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/tynovsky/unpack-custom/issues"
+      },
+      "homepage" : "https://github.com/tynovsky/unpack-custom",
       "repository" : {
          "type" : "git",
-         "url" : "git://git.int.avast.com/tynovsky/unpack-custom.git"
+         "url" : "git://github.com/tynovsky/unpack-custom.git",
+         "web" : "https://github.com/tynovsky/unpack-custom"
       }
    },
    "version" : "0.01"

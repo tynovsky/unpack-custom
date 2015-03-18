@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/tynovsky/unpack-custom.svg?branch=master)](https://travis-ci.org/tynovsky/unpack-custom)
 # NAME
 
 Unpack::Custom - It's new $module
