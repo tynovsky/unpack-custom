@@ -9,7 +9,7 @@ on 'build' => sub {
     requires 'ExtUtils::Helpers::Unix';
     requires 'ExtUtils::InstallPaths';
     requires 'Module::Build::Tiny';
-}
+};
 
 on 'test' => sub {
     requires 'Test::More', '0.98';
