@@ -4,7 +4,7 @@
       "Týnovský Miroslav <tynovsky@avast.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v2.3.0, CPAN::Meta::Converter version 2.143240",
+   "generated_by" : "Minilla/v2.5.0, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "perl_5"
    ],
@@ -26,6 +26,15 @@
       ]
    },
    "prereqs" : {
+      "build" : {
+         "requires" : {
+            "ExtUtils::Config" : "0",
+            "ExtUtils::Helpers" : "0",
+            "ExtUtils::Helpers::Unix" : "0",
+            "ExtUtils::InstallPaths" : "0",
+            "Module::Build::Tiny" : "0"
+         }
+      },
       "configure" : {
          "requires" : {
             "Module::Build::Tiny" : "0.035"
@@ -42,12 +51,16 @@
       },
       "runtime" : {
          "requires" : {
+            "Clone" : "0",
+            "Try::Tiny" : "0",
             "Unpack::SevenZip" : "0",
-            "perl" : "5.008001"
+            "perl" : "5.010"
          }
       },
       "test" : {
          "requires" : {
+            "List::MoreUtils" : "0",
+            "Test::Exception" : "0",
             "Test::More" : "0.98"
          }
       }
@@ -64,5 +77,6 @@
          "web" : "https://github.com/tynovsky/unpack-custom"
       }
    },
-   "version" : "0.01"
+   "version" : "0.01",
+   "x_serialization_backend" : "JSON::PP version 2.27300"
 }
