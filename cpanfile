@@ -1,7 +1,8 @@
 requires 'perl', '5.010';
-requires 'Unpack::SevenZip';
+#requires 'Unpack::SevenZip';
 requires 'Clone';
 requires 'Try::Tiny';
+requires 'Path::Tiny';
 
 on 'build' => sub {
     requires 'ExtUtils::Config';

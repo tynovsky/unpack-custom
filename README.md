@@ -25,4 +25,4 @@ it under the same terms as Perl itself.
 
 # AUTHOR
 
-Týnovský Miroslav &lt;tynovsky@avast.com>
+Týnovský Miroslav <tynovsky@avast.com>

@@ -9,7 +9,7 @@ use File::Path qw(make_path);
 use Unpack::SevenZip;
 use vars qw($AUTOLOAD);
 
-our $VERSION = "0.03";
+our $VERSION = "0.2.0";
 
 my @SUBS = qw(initialize finalize before_unpack after_unpack want_unpack save);
 

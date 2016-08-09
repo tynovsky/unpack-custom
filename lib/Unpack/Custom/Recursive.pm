@@ -122,7 +122,7 @@ our %callbacks = (
         }
 
         my $filename = "$self->{var}{destination}/$sha.dat";
-        open my $fh, '>:bytes', $filename;
+        open my $fh, '>:raw', $filename;
         print {$fh} $contents;
         close $fh;
         # say STDERR "Saved $file->{path} to $filename";
