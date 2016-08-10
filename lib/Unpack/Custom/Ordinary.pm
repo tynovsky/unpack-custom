@@ -26,9 +26,12 @@ our %callbacks = (
     save => sub {
         my ($self, $contents, $file) = @_;
 
+        print STDERR "$self->{var}{destination} . $file->{path}\n";
         my $filename = path($self->{var}{destination})->child($file->{path});
         $filename->parent->mkpath();
-        $filename->spew({binmode => ":raw"}, $contents);
+        open my $fh, '>:raw', $filename;
+        print {$fh} $contents;
+        close $fh;
 
         return $filename
     }
