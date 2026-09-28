@@ -28,3 +28,7 @@ cover_db/
 MYMETA.*
 
 /Unpack-Custom-*
+
+# test leftovers
+/dest*/
+/apache-abdera-1.1-src/

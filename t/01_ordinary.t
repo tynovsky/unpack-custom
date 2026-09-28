@@ -1,25 +1,27 @@
 use strict;
 use warnings;
 use Test::More 0.98;
-use File::Path qw(remove_tree);
-use Data::Dumper;
+use lib 't/lib';
+use TestUtil qw(run_7z clean);
 use Unpack::Custom::Ordinary;
 
-my $sevenzip = $ENV{SEVENZIP} // '7z';
+my ($archive, $dest) = ('t/ordinary.7z', 'dest_ordinary');
+clean($archive, $dest);
+
+run_7z('a', $archive, 'META.json', 't/01_ordinary.t');
 
 my $unpacker = Unpack::Custom::Ordinary->new();
 
-`$sevenzip a t/ordinary.7z META.json t/01_ordinary.t`;
+my @files  = ($archive);
+my $params = ['-pinfected'];
+$unpacker->extract(\@files, $dest, $params);
 
-my @files = qw(t/ordinary.7z);
+ok(-e "$dest/META.json", 'META.json extracted');
+ok(-e "$dest/t/01_ordinary.t", 'test file extracted');
+is(-s "$dest/META.json", -s 'META.json', 'META.json has the right size');
+is_deeply(\@files, [$archive], 'list of files not modified');
+is_deeply($params, ['-pinfected'], 'sevenzip params not modified');
 
-$unpacker->extract([@files], 'dest', ['-pinfected']);
-
-ok(-e 'dest/META.json', 'META.json extracted');
-ok(-e 'dest/t/01_ordinary.t', 'test file extracted');
-
-note `ls dest`;
-
-unlink 't/ordinary.7z';
+clean($archive, $dest);
 
 done_testing;

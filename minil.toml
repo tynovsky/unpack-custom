@@ -1,4 +1,3 @@
 name = "Unpack-Custom"
-badges = ["travis"]
+badges = ["github-actions/test.yml"]
 module_maker="ModuleBuildTiny"
-
