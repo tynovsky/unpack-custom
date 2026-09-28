@@ -17,6 +17,7 @@ jobs:
         with:
           perl-version: ${{ matrix.perl }}
       - run: sudo apt-get update -qq && sudo apt-get install -qq 7zip
-      - run: cpanm --notest https://github.com/tynovsky/unpack-sevenzip/archive/master.tar.gz
+      # Unpack::SevenZip 0.02 (not on CPAN yet)
+      - run: cpanm --notest https://github.com/tynovsky/unpack-sevenzip/archive/1e5148d52ff93d49c16024dbe75f527ebc293836.tar.gz
       - run: cpanm --notest --installdeps .
       - run: prove -lv t xt
