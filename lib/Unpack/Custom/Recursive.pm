@@ -98,7 +98,7 @@ our %callbacks = (
                 push @{ $var->{extra_params} }, '-spd'
                     if $path =~ /[*?]/
                     && ! grep { $_ eq '-spd' } @{ $var->{extra_params} };
-                push @{ $var->{extra_params} }, shell_quote("-x!$path");
+                push @{ $var->{extra_params} }, "-x!$path";
             }
         }
         $var->{list} = $list;
@@ -238,15 +238,6 @@ sub escape_name {
     return $name;
 }
 
-# Unpack::SevenZip passes the switches to the shell
-sub shell_quote {
-    my ($string) = @_;
-
-    $string =~ s/'/'\\''/g;
-
-    return "'$string'";
-}
-
 1;
 __END__
 
@@ -319,6 +310,6 @@ it under the same terms as Perl itself.
 
 =head1 AUTHOR
 
-Týnovský Miroslav E<lt>tynovsky@avast.comE<gt>
+Týnovský Miroslav E<lt>tynovsky@seznam.czE<gt>
 
 =cut

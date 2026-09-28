@@ -11,8 +11,9 @@ use File::Find;
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 
 my $dir     = 'apache-abdera-1.1-src';
-my $archive = "t/$dir.tar.gz";
+my $archive = "xt/data/$dir.tar.gz";
 my $dest    = 'dest_real_life';
+plan skip_all => "$archive not available (not part of the distribution)" if ! -e $archive;
 clean($dir, $dest);
 
 system('tar', 'xzf', $archive) == 0 or die "tar xzf $archive failed: $?";

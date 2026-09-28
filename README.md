@@ -103,4 +103,4 @@ it under the same terms as Perl itself.
 
 # AUTHOR
 
-Týnovský Miroslav <tynovsky@avast.com>
+Týnovský Miroslav <tynovsky@seznam.cz>

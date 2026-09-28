@@ -123,6 +123,6 @@ it under the same terms as Perl itself.
 
 =head1 AUTHOR
 
-Týnovský Miroslav E<lt>tynovsky@avast.comE<gt>
+Týnovský Miroslav E<lt>tynovsky@seznam.czE<gt>
 
 =cut

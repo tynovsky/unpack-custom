@@ -16,7 +16,7 @@ jobs:
       - uses: shogo82148/actions-setup-perl@v1
         with:
           perl-version: ${{ matrix.perl }}
-      - run: sudo apt-get update -qq && sudo apt-get install -qq p7zip-full
+      - run: sudo apt-get update -qq && sudo apt-get install -qq 7zip
       - run: cpanm --notest https://github.com/tynovsky/unpack-sevenzip/archive/master.tar.gz
       - run: cpanm --notest --installdeps .
-      - run: prove -lv t
+      - run: prove -lv t xt

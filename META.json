@@ -1,7 +1,7 @@
 {
    "abstract" : "extract archives with 7-Zip using user-defined callbacks",
    "author" : [
-      "Týnovský Miroslav <tynovsky@avast.com>"
+      "Týnovský Miroslav <tynovsky@seznam.cz>"
    ],
    "dynamic_config" : 0,
    "generated_by" : "Minilla/v3.0.2, CPAN::Meta::Converter version 2.150005",
@@ -56,7 +56,7 @@
             "File::Copy" : "0",
             "File::Path" : "0",
             "Path::Tiny" : "0",
-            "Unpack::SevenZip" : "0",
+            "Unpack::SevenZip" : "0.02",
             "perl" : "5.010"
          }
       },

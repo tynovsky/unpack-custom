@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Carp;
-use Unpack::SevenZip;
+use Unpack::SevenZip 0.02; # runs 7z without a shell
 
 our $VERSION = "0.3.0";
 
@@ -221,6 +221,6 @@ it under the same terms as Perl itself.
 
 =head1 AUTHOR
 
-Týnovský Miroslav E<lt>tynovsky@avast.comE<gt>
+Týnovský Miroslav E<lt>tynovsky@seznam.czE<gt>
 
 =cut

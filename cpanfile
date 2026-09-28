@@ -1,6 +1,6 @@
 requires 'perl', '5.010';
-# not on CPAN, install from https://github.com/tynovsky/unpack-sevenzip
-requires 'Unpack::SevenZip';
+# https://github.com/tynovsky/unpack-sevenzip
+requires 'Unpack::SevenZip', '0.02';
 requires 'Path::Tiny';
 requires 'Digest::SHA';
 requires 'File::Copy';

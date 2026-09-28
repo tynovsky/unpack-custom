@@ -22,8 +22,6 @@ is(read_names($dest)->{ sha256_hex("tab\n") }, "$archive/tab\\there.txt",
 
 is(Unpack::Custom::Recursive::escape_name("a\\b\nc\rd"), 'a\\\\b\\nc\\rd',
     'backslash, newline and carriage return escaped');
-is(Unpack::Custom::Recursive::shell_quote("-x!it's"), q{'-x!it'\''s'},
-    'shell quoting');
 
 clean($archive, $dest);
 

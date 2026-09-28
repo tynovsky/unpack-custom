@@ -18,4 +18,9 @@ Revision history for Perl extension Unpack-Custom
     - the archive listing is reused and passwords are used when listing
     - removed debug output and unused dependencies, fixed cpanfile
     - documentation, tests cleanup, GitHub Actions instead of Travis
+    - requires Unpack::SevenZip 0.02 (runs 7z without a shell, so the
+      multivolume -x! switches are passed as they are)
+    - tests are skipped when 7z is not installed
+    - big test archives moved to xt/data and excluded from the distribution
+    - author e-mail changed to tynovsky@seznam.cz
     - original version

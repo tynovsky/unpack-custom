@@ -3,13 +3,23 @@ package TestUtil;
 use strict;
 use warnings;
 
-use Exporter 'import';
+use Exporter ();
+our @ISA = qw(Exporter);
 use File::Path qw(remove_tree);
 use Digest::SHA;
+use Test::More;
+use Unpack::SevenZip;
 
 our @EXPORT_OK = qw(sevenzip run_7z clean dat_files corrupt_dat_files read_names);
 
 sub sevenzip { $ENV{SEVENZIP} // '7z' }
+
+# skip the whole test file when 7-Zip is not installed (e.g. CPAN testers)
+sub import {
+    my $ok = eval { Unpack::SevenZip->new({ sevenzip => sevenzip() }); 1 };
+    plan skip_all => '7-Zip (7z) not found, set SEVENZIP to its path' if ! $ok;
+    __PACKAGE__->export_to_level(1, @_);
+}
 
 # run 7z with a list of arguments (no shell), die on failure
 sub run_7z {
