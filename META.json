@@ -1,7 +1,7 @@
 {
-   "abstract" : "It's new $module",
+   "abstract" : "extract archives with 7-Zip using user-defined callbacks",
    "author" : [
-      "Týnovský Miroslav <tynovsky@avast.com>"
+      "Týnovský Miroslav <tynovsky@seznam.cz>"
    ],
    "dynamic_config" : 0,
    "generated_by" : "Minilla/v3.0.2, CPAN::Meta::Converter version 2.150005",
@@ -51,14 +51,20 @@
       },
       "runtime" : {
          "requires" : {
-            "Clone" : "0",
-            "Try::Tiny" : "0",
+            "Carp" : "0",
+            "Digest::SHA" : "0",
+            "File::Copy" : "0",
+            "File::Path" : "0",
+            "Path::Tiny" : "0",
+            "Unpack::SevenZip" : "0.02",
             "perl" : "5.010"
          }
       },
       "test" : {
          "requires" : {
-            "List::MoreUtils" : "0",
+            "File::Find" : "0",
+            "IO::Compress::Zip" : "0",
+            "IO::Uncompress::Gunzip" : "0",
             "Test::Exception" : "0",
             "Test::More" : "0.98"
          }
@@ -72,10 +78,10 @@
       "homepage" : "https://github.com/tynovsky/unpack-custom",
       "repository" : {
          "type" : "git",
-         "url" : "git://github.com/tynovsky/unpack-custom.git",
+         "url" : "https://github.com/tynovsky/unpack-custom.git",
          "web" : "https://github.com/tynovsky/unpack-custom"
       }
    },
-   "version" : "0.2.0",
+   "version" : "0.3.0",
    "x_serialization_backend" : "JSON::PP version 2.27300"
 }

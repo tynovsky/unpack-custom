@@ -1,25 +1,36 @@
 use strict;
+use warnings;
 use Test::More 0.98;
+use lib 't/lib';
+use TestUtil qw(run_7z clean dat_files);
 use Unpack::Custom::Recursive;
-use IO::Select;
-use File::Path qw(remove_tree);
 
-`7z a -pHESLO t/password.7z META.json LICENSE`;
+my ($archive, $dest) = ('t/password.7z', 'dest_password');
+clean($archive, $dest);
+
+run_7z('a', '-pHESLO', $archive, 'META.json', 'LICENSE');
 
 my $unpacker = Unpack::Custom::Recursive->new();
-$unpacker->extract(['t/password.7z'], 'dest');
+$unpacker->extract([$archive], $dest);
 
-my @files = glob('dest/*.dat');
-is(@files, 1, 'Not extracted without password');
+is(scalar(dat_files($dest)), 1, 'Not extracted without password');
 
-$unpacker->extract(['t/password.7z'], 'dest', ['-pHESLO']);
-note `ls dest`;
-note `cat dest/names.txt`;
-#note `cat dest/*.dat`;
-@files = glob('dest/*.dat');
-is(@files, 2, 'Extracted with password');
+my $params = ['-pHESLO'];
+$unpacker->extract([$archive], $dest, $params);
+is(scalar(dat_files($dest)), 2, 'Extracted with password');
+is_deeply($params, ['-pHESLO'], 'sevenzip params not modified');
 
-remove_tree('dest');
-unlink 't/password.7z';
+clean($dest);
+
+$unpacker->extract([$archive], $dest);
+is(scalar(dat_files($dest)), 1, 'password is not remembered from previous call');
+
+clean($dest);
+
+my $with_default = Unpack::Custom::Recursive->new({ sevenzip_params => ['-pHESLO'] });
+$with_default->extract([$archive], $dest);
+is(scalar(dat_files($dest)), 2, 'Extracted with password given to new()');
+
+clean($archive, $dest);
 
 done_testing;

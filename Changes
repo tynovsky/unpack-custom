@@ -2,5 +2,25 @@ Revision history for Perl extension Unpack-Custom
 
 {{$NEXT}}
 
+    - sevenzip params are no longer modified nor shared between files and
+      extract calls; multivolume exclusions are per file and shell-quoted
+    - the state of a run ($self->{var}) is reset for every extract call
+    - Unpack::Custom::Ordinary: archive entries can't be written outside
+      the destination (path traversal)
+    - errors when writing files are fatal instead of silently ignored
+    - extract dies when files are not an ARRAY ref, a file does not exist
+      or destination is missing; a file named '0' no longer stops the queue
+    - Unpack::Custom::Recursive: the same content given or found several
+      times is processed once, corrupted files are deleted only when written
+      for the corrupted entry, names.txt is escaped and sorted
+    - new Unpack::Custom::Recursive options max_depth and max_extracted_size
+    - callbacks are real methods instead of AUTOLOAD
+    - the archive listing is reused and passwords are used when listing
+    - removed debug output and unused dependencies, fixed cpanfile
+    - documentation, tests cleanup, GitHub Actions instead of Travis
+    - requires Unpack::SevenZip 0.02 (runs 7z without a shell, so the
+      multivolume -x! switches are passed as they are)
+    - tests are skipped when 7z is not installed
+    - big test archives moved to xt/data and excluded from the distribution
+    - author e-mail changed to tynovsky@seznam.cz
     - original version
-

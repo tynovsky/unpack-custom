@@ -1,22 +1,23 @@
 use strict;
+use warnings;
 use Test::More 0.98;
+use lib 't/lib';
+use TestUtil qw(clean dat_files);
 use Unpack::Custom::Recursive;
-use IO::Select;
-use File::Path qw(remove_tree);
-use Try::Tiny;
-use Data::Dumper;
+
+my $dest = 'dest_quine';
 
 my $unpacker = Unpack::Custom::Recursive->new();
 
-my @files = qw(t/r.zip);
+# r.zip contains itself, quine.zip contains a directory with r.zip
+for my $quine (qw(t/r.zip t/quine.zip)) {
+    clean($dest);
+    $unpacker->extract([$quine], $dest);
 
-$unpacker->extract([ @files ], 'dest');
+    is(scalar(dat_files($dest)), 0, "$quine: nothing was extracted (it's a trap!).");
+    ok(-e "$dest/names.txt", "$quine: names.txt written");
+}
 
-my @result = glob('dest/*.dat');
-note `ls dest`;
-is(@result, 0, 'Nothing was extracted (it\'s a trap!).');
-note `cat dest/names.txt`;
+clean($dest);
 
-remove_tree('dest');
 done_testing;
-

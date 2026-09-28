@@ -1,4 +1,8 @@
 name = "Unpack-Custom"
-badges = ["travis"]
+badges = ["github-actions/test.yml"]
 module_maker="ModuleBuildTiny"
 
+[FileGatherer]
+# big test archives (some contain executables) are used only by the author
+# tests in xt/, they are not part of the distribution
+exclude_match = ['^xt/data/']
