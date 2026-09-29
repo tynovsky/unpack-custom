@@ -88,31 +88,76 @@ __END__
 
 =head1 NAME
 
-Unpack::Custom::Ordinary - extract archives the same way as C<7z x>
+Unpack::Custom::Ordinary - extract archives into a directory, like C<7z x>
 
 =head1 SYNOPSIS
 
     use Unpack::Custom::Ordinary;
 
     my $unpacker = Unpack::Custom::Ordinary->new();
-    $unpacker->extract(['archive.7z'], 'destination', ['-pPASSWORD']);
+    $unpacker->extract(['archive.7z', 'other.zip'], 'destination');
+
+    # encrypted archives
+    $unpacker->extract(['secret.7z'], 'destination', ['-pPASSWORD']);
 
 =head1 DESCRIPTION
 
-Unpack::Custom::Ordinary takes any kind of archive (restricted to what 7zip
-can extract) and unpacks it. It unpacks it into the very same result as
-7z x would do. Hence the name 'Ordinary'.
+Unpack::Custom::Ordinary takes any kind of archive 7-Zip can read and
+extracts it into a directory tree below the destination, the same way as
+C<7z x> does. Hence the name 'Ordinary'. It is the simplest unpacker built
+on L<Unpack::Custom>.
 
-Paths inside the archive are always extracted below the destination
-directory: absolute paths are made relative and entries containing C<..>
-are skipped with a warning.
+=over
 
-Any of the callbacks of L<Unpack::Custom> can be overridden by passing it
-to C<new>:
+=item *
+
+The destination directory is created when it does not exist.
+
+=item *
+
+All archives are extracted into the same destination; existing files are
+overwritten.
+
+=item *
+
+Archives inside the archives are not extracted (use
+L<Unpack::Custom::Recursive> for that).
+
+=item *
+
+Files which are not archives are skipped.
+
+=item *
+
+Paths inside the archive are always extracted below the destination:
+absolute paths are made relative and entries containing C<..> are skipped
+with a warning.
+
+=back
+
+=head1 METHODS
+
+=head2 new(\%args)
+
+Takes the optional arguments of L<Unpack::Custom/new>. Any of the
+L<callbacks|Unpack::Custom/CALLBACKS> can be overridden too, e.g. to
+extract only some files:
 
     my $unpacker = Unpack::Custom::Ordinary->new({
-        save => sub { my ($self, $contents, $file) = @_; ... },
+        save => sub {
+            my ($self, $contents, $file) = @_;
+            return if $file->{path} !~ /\.txt$/;
+            return $Unpack::Custom::Ordinary::callbacks{save}->(@_);
+        },
     });
+
+=head2 extract(\@archives, $destination, \@sevenzip_params)
+
+Extracts the archives, see L<Unpack::Custom/extract>. Returns nothing.
+
+=head1 SEE ALSO
+
+L<Unpack::Custom>, L<Unpack::Custom::Recursive>
 
 =head1 LICENSE
 
