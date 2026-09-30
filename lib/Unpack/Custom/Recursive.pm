@@ -243,6 +243,8 @@ __END__
 
 =encoding utf-8
 
+=for stopwords deduplicated quine
+
 =head1 NAME
 
 Unpack::Custom::Recursive - extract archives recursively, deduplicated by content
@@ -255,51 +257,138 @@ Unpack::Custom::Recursive - extract archives recursively, deduplicated by conten
         max_depth          => 10,         # optional
         max_extracted_size => 2 ** 30,    # optional, in bytes
     });
-    my $name_of = $unpacker->extract(['archive.zip'], 'destination');
+    my $name_of = $unpacker->extract(['photos.zip'], 'destination', ['-pPASSWORD']);
+
+    for my $sha (keys %$name_of) {
+        # destination/$sha.dat exists for the files which are not archives
+        print "$sha: $name_of->{$sha}{name}\n";
+    }
 
 =head1 DESCRIPTION
 
-Unpack::Custom::Recursive takes any kind of archive (restricted to what 7zip
-can extract) and unpacks it. If it contains an archive, it is unpacked
-(recursively) too.
+Unpack::Custom::Recursive takes any kind of archive 7-Zip can read and
+extracts it. If it contains an archive, it is extracted too, and so on,
+until only files which are not archives are left. It is built on
+L<Unpack::Custom>.
 
 Every file is stored in the destination directory as C<< <sha256>.dat >>,
-so each content is stored only once. Archives which were successfully
-unpacked are deleted from the destination (the input files themselves are
-copied to the destination first and never touched). The file
-C<names.txt> in the destination contains one line per content:
+where C<< <sha256> >> is the SHA-256 of its content (in hex), so each
+content is stored only once, however many times it occurs. This is useful
+e.g. for scanning all the files in a set of archives.
 
-    <sha256> TAB <input>/<archive>/.../<file>
+For example, for C<photos.zip> containing C<inner.7z> (which contains
+C<META.json>) and C<docs/LICENSE>, the destination contains:
 
-Backslash, tab, newline and carriage return in names are escaped as
-C<\\>, C<\t>, C<\n> and C<\r>. When the same content appears several times,
-the first name seen is used.
+    1106089c….dat     # the content of LICENSE
+    4b9f4152….dat     # the content of META.json
+    names.txt
 
-C<extract> returns a HASH reference keyed by sha256 with the name, the
-parent sha256 and the list of all ancestors of every file.
+=over
 
-=head1 OPTIONS
+=item *
+
+The input files are copied to the destination first; the originals are
+never modified or deleted.
+
+=item *
+
+An archive is deleted from the destination once at least one file was
+extracted from it, so only the files which are not archives (and the
+archives which could not be extracted) are left.
+
+=item *
+
+Files which 7-Zip reports as corrupted are deleted, with a warning.
+
+=item *
+
+Nested encrypted archives are extracted with the same passwords (C<-p>
+switches) as the input. An archive which can't be extracted (e.g. because
+of a wrong password) is kept as it is.
+
+=item *
+
+The same content is processed only once, so an archive which contains
+itself (a "quine") does not cause an endless loop.
+
+=back
+
+=head2 names.txt
+
+C<names.txt> in the destination has one line per content: the SHA-256, a
+tab and the path of the file, starting with the input file name and going
+through all the archives it is nested in:
+
+    1106089c…	photos.zip/docs/LICENSE
+    4b9f4152…	photos.zip/inner.7z/META.json
+    8fcdd5b3…	photos.zip/inner.7z
+    a2e5f3d2…	photos.zip
+
+The archives themselves are listed too (they were deleted from the
+destination). The lines are sorted by the SHA-256. Backslash, tab, newline
+and carriage return in names are escaped as C<\\>, C<\t>, C<\n> and C<\r>.
+When the same content occurs several times, only the first name seen is
+used.
+
+=head1 METHODS
+
+=head2 new(\%args)
+
+Takes the optional arguments of L<Unpack::Custom/new> and these options:
 
 =over
 
 =item no_recursive
 
-Do not unpack archives found inside the input archives.
+Do not extract archives found inside the input archives.
 
 =item max_depth
 
-Do not unpack archives nested deeper than this (inputs have depth 0, their
-content depth 1, ...).
+Do not extract archives nested deeper than this. The input files have
+depth 0, the files in them depth 1 and so on, so C<< max_depth => 0 >>
+extracts only the input archives.
 
 =item max_extracted_size
 
 Stop writing new files when the total size of the extracted files would
-exceed this number of bytes. Note that L<Unpack::SevenZip> keeps each
-extracted file in memory while it is being saved.
+exceed this number of bytes; the skipped files are reported by a warning.
+Use it together with C<max_depth> as a protection against zip bombs.
 
 =back
 
-Any of the callbacks of L<Unpack::Custom> can be overridden too.
+Any of the L<callbacks|Unpack::Custom/CALLBACKS> can be overridden too.
+
+=head2 extract(\@files, $destination, \@sevenzip_params)
+
+Extracts the files, see L<Unpack::Custom/extract>, writes C<names.txt>
+and returns a HASH reference keyed by the SHA-256 of every file, archive
+and input file:
+
+    {
+        '4b9f4152…' => {
+            name    => 'META.json',   # name in the parent archive
+            sha     => '4b9f4152…',
+            parent  => '8fcdd5b3…',   # SHA-256 of the parent, '' for an input file
+            parents => [              # the file itself and all its ancestors
+                '4b9f4152…',          # META.json
+                '8fcdd5b3…',          # inner.7z
+                'a2e5f3d2…',          # photos.zip
+            ],
+        },
+        ...
+    }
+
+The files in C<$destination> from previous runs are kept; content already
+present there is not written again.
+
+=head1 LIMITATIONS
+
+See L<Unpack::Custom/LIMITATIONS>: each extracted file is kept in memory
+while it is being saved.
+
+=head1 SEE ALSO
+
+L<Unpack::Custom>, L<Unpack::Custom::Ordinary>, L<Unpack::SevenZip>
 
 =head1 LICENSE
 
